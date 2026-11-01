@@ -94,6 +94,10 @@ dotnet publish App/App.csproj -c Release -r win-x64 --self-contained false -p:Pu
 
 丹成于 `publish/FuckPCL.exe`。
 
+## 自动出丹
+
+将 `.github/workflows/release.yml` 提交到默认分支后，在 GitHub 发布新 Release（含预发布），Actions 会按该 Release 的标签构建 Windows x64 版本，并将 `FuckPCL.exe` 和 `SHA256SUMS.txt` 上传到同一个 Release。草稿保存时不触发，点击发布后才开炉。产物仍需 .NET 10 Windows Desktop Runtime。
+
 ## 到底念了什么咒
 
 定位内嵌 `PCL.Core.dll` 中的：
