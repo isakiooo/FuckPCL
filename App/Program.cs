@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using FuckPCL;
 
@@ -13,10 +14,12 @@ internal static class Program
 
 internal sealed class MainForm : Form
 {
+    private const string ProjectUrl = "https://github.com/isakiooo/FuckPCL";
     private readonly TextBox pathBox = new() { Dock = DockStyle.Fill, PlaceholderText = "选择或拖入 PCL-CE 的 EXE 文件…" };
     private readonly Button browse = new() { Text = "选择文件…", AutoSize = true };
     private readonly Button inspect = new() { Text = "检测", Width = 100, Height = 40 };
     private readonly Button apply = new() { Text = "恢复下载功能", Width = 166, Height = 40 };
+    private readonly Button project = new() { Text = "打开原项目", Width = 140, Height = 40 };
     private readonly Label status = new() { Text = "等待选择文件", AutoSize = true };
     private readonly TextBox log = new()
     {
@@ -38,7 +41,7 @@ internal sealed class MainForm : Form
         AllowDrop = true;
         var layout = new TableLayoutPanel
         {
-            Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 7, Padding = new Padding(28)
+            Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 8, Padding = new Padding(28)
         };
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 45));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 49));
@@ -46,6 +49,7 @@ internal sealed class MainForm : Form
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 63));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 33));
         layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 30));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 33));
         layout.Controls.Add(new Label
         {
@@ -67,11 +71,18 @@ internal sealed class MainForm : Form
         apply.ForeColor = Color.White;
         apply.FlatStyle = FlatStyle.Flat;
         apply.FlatAppearance.BorderSize = 0;
-        buttons.Controls.AddRange([inspect, apply]);
+        buttons.Controls.AddRange([inspect, apply, project]);
         layout.Controls.Add(buttons, 0, 3);
         layout.Controls.Add(status, 0, 4);
         layout.Controls.Add(log, 0, 5);
-        layout.Controls.Add(new Label { Text = "操作前请退出 PCL-CE，并自行复制保存原 EXE。", AutoSize = true, Padding = new Padding(0, 7, 0, 0) }, 0, 6);
+        layout.Controls.Add(new Label
+        {
+            Text = "免费开源，认准原项目。倒卖司马！良心已被 GC 回收。",
+            AutoSize = true, ForeColor = Color.FromArgb(172, 48, 48),
+            Font = new Font("Microsoft YaHei UI", 9, FontStyle.Bold),
+            Padding = new Padding(0, 7, 0, 0)
+        }, 0, 6);
+        layout.Controls.Add(new Label { Text = "操作前请退出 PCL-CE，并自行复制保存原 EXE。", AutoSize = true, Padding = new Padding(0, 7, 0, 0) }, 0, 7);
         Controls.Add(layout);
         browse.Click += (_, _) =>
         {
@@ -81,6 +92,19 @@ internal sealed class MainForm : Form
         };
         inspect.Click += async (_, _) => await RunOperation("检测", RegionFixer.Inspect);
         apply.Click += async (_, _) => await RunOperation("恢复下载功能", RegionFixer.Apply);
+        project.Click += (_, _) =>
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo(ProjectUrl) { UseShellExecute = true });
+            }
+            catch (Exception ex)
+            {
+                status.ForeColor = Color.FromArgb(172, 48, 48);
+                status.Text = "无法打开浏览器";
+                log.Text = $"请手动访问原项目：{ProjectUrl}\r\n\r\n{ex.Message}";
+            }
+        };
         DragEnter += (_, e) => { if (!busy && e.Data?.GetDataPresent(DataFormats.FileDrop) == true) e.Effect = DragDropEffects.Copy; };
         DragDrop += (_, e) =>
         {
